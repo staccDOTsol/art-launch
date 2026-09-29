@@ -107,7 +107,7 @@ const AddCoin = ({
 
         <div className="text-xs">
           if your coin is not listed, you can add it by providing the contract
-          address address. only coins launched on pump are supported.
+          address address. only coins launched on art are supported.
         </div>
       </DialogContent>
     </Dialog>

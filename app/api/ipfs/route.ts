@@ -59,7 +59,7 @@ export const POST = async (req: Request, res: NextApiResponse) => {
     description,
     image: `https://cf-ipfs.com/ipfs/${imageIpfsHash}`,
     showName,
-    createdOn: "https://pump.fun",
+    createdOn: "https://launch.squarefun.xyz",
   };
 
   if (twitter) metadata.twitter = twitter;

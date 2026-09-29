@@ -29,8 +29,8 @@ export function HowItWorks() {
         </DialogHeader>
 
         <div>
-          Pump prevents rugs by making sure that all created tokens are safe.
-          Each coin on pump is a{" "}
+          art prevents rugs by making sure that all created tokens are safe.
+          Each coin on art is a{" "}
           <span className="text-green-300 bold">fair-launch</span> with{" "}
           <span className="text-blue-300">no presale</span> and{" "}
           <span className="text-orange-300">no team allocation.</span>
@@ -49,7 +49,8 @@ export function HowItWorks() {
             market cap of $69k
           </div>
           <div className="text-gray-300">
-            step 5: $12k of liquidity is then deposited in raydium and burned
+            step 5: $12k of liquidity is then deposited in raydium and burned —
+            and the fees come home to art
           </div>
         </div>
 
@@ -58,7 +59,7 @@ export function HowItWorks() {
           variant="ghost"
           className="text-slate-50 hover:font-bold hover:bg-transparent hover:text-slate-50"
         >
-          [I{"'"}m ready to pump]
+          [I{"'"}m ready to art]
         </Button>
       </DialogContent>
     </Dialog>
