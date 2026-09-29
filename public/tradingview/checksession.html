@@ -1,0 +1,108 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Advanced Charts Session Parser</title><style>.input-text {
+		margin: 10px 0;
+	}
+
+	.results {
+		margin-top: 10px;
+		word-break: break-all;
+	}
+
+	table {
+		width: 100%;
+	}
+
+	tr {
+		border-top: none;
+		color:#666B85;
+		font-size:16px;
+		font-weight:normal;
+		text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
+	}
+
+	tr:first-child {
+		border-top:none;
+	}
+
+	tr:last-child {
+		border-bottom:none;
+	}
+
+	tr:nth-child(odd) td {
+		background:#EBEBEB;
+	}
+
+	tr:last-child td:first-child {
+		border-bottom-left-radius:3px;
+	}
+
+	tr:last-child td:last-child {
+		border-bottom-right-radius:3px;
+	}
+
+	td {
+		background:#FFFFFF;
+		padding:20px;
+		text-align:left;
+		vertical-align:middle;
+		font-weight:300;
+		font-size:18px;
+		border-right: 1px solid #C1C3D1;
+	}
+
+	td:last-child {
+		border-right: 0px;
+	}
+
+	th.text-left {
+		text-align: left;
+	}
+
+	th.text-center {
+		text-align: center;
+	}
+
+	th.text-right {
+		text-align: right;
+	}
+
+	td.text-left {
+		text-align: left;
+	}
+
+	td.text-center {
+		text-align: center;
+	}
+
+	td.text-right {
+		text-align: right;
+	}
+
+	.table-fill {
+		background: white;
+		border-radius:3px;
+		border-collapse: collapse;
+		min-height: 320px;
+		margin: auto;
+		max-width: 600px;
+		padding:5px;
+		width: 100%;
+		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+		padding: 15px;
+	}
+
+	.input-field {
+		width: 100%;
+		font-size: 20px;
+		line-height: 1.5;
+		margin-bottom: 10px;
+		padding: 0 5px;
+	}
+
+	table {
+		border-collapse: collapse;
+	}</style></head><body><form class="table-fill"><h1>Advanced Charts Session Parser</h1><input id="session" class="input-field" name="session" value="24x7" maxlength="500" autocomplete="off"><div id="result" class="results"></div></form><script defer=defer>(()=>{var t={842(t,e){"use strict";function s(t,e){if(void 0===t)throw new Error("".concat(null!=e?e:"Value"," is undefined"));return t}function n(t,e){if(null===t)throw new Error("".concat(null!=e?e:"Value"," is null"));return t}e.ensureNotNull=e.assert=void 0,e.assert=function(t,e){if(!t)throw new Error("Assertion failed".concat(e?": ".concat(e):""))},e.ensureNotNull=n},660(){},136(t){t.exports={isRtl:()=>!1}}},e={};function s(n){var r=e[n];if(void 0!==r)return r.exports;var i=e[n]={exports:{}};return t[n](i,i.exports,s),i.exports}(()=>{"use strict";var t=s(660);class e{constructor(e){this._invalid=!1,this._name=e;let s=t.tzData?.[e]??null;!s&&_&&(s=_.instance().getTimezoneData(e)),s||(s={time:[],offset:[]},this._invalid=!0),s.time.length!==s.offset.length&&(s={time:[],offset:[]},this._invalid=!0);const n=s;if(!n.time_utc){const t=s.time,e=s.offset,r=t.length,i=new Array(r);for(let s=0;s<r;s++)t[s]*=1e3,e[s]*=1e3,i[s]=t[s]-e[s];n.time_utc=i}this.tz=n}offset_utc(t){return e.offset(this.tz.time_utc,this.tz.offset,t)}offset_loc(t){return e.offset(this.tz.time,this.tz.offset,t)}name(){return this._name}is_valid(){return!this._invalid}correction_loc(t){const e=this.tz.time,s=this.tz.offset,n=p(e,t);if(n<1)return 0;const r=s[n]-s[n-1];if(r>0){if(t-e[n-1]<=r)return r}return 0}static offset(t,e,s){const n=p(t,s);return-1===n?0:e[n]}}const n=1440;function r(t){return t.getUTCFullYear()}function i(t){return t.getUTCMonth()}function o(t){return t.getUTCHours()}function a(t){return t.getUTCMinutes()}function h(t){return t.getUTCDate()}function f(t){return t.getUTCDay()+1}function d(t){return function(t){return 60*o(t)+a(t)}(t)}function u(t,e){t.setTime(t.getTime()+864e5*e)}function c(t){return new Date(t.getTime())}function l(t){return t%4==0&&(t%100!=0||t%400==0)}function y(t){return new e(t)}let _;function p(t,e){const s=t.length;if(0===s)return-1;if(isNaN(e))throw Error("Key is NaN");let n=0,r=s-1,i=g((n+r)/2);for(;;){if(t[i]>e){if(r=i-1,r<n)return i}else if(n=i+1,r<n)return i<s-1?i+1:-1;i=g((n+r)/2)}}function g(t){return Math.trunc(t)}var E=s(842);function m(t){return w(t,2)}function w(t,e=2){const s=t.toString();return"0".repeat(Math.max(0,e-s.length))+s}class O{constructor(t,e,s){this._dayOfWeek=null,this.year=t,this.month=e,this.day=s}toString(){return`${w(this.year,4)}-${m(this.month)}-${m(this.day)}`}toyyyymmdd(){return`${w(this.year,4)}${m(this.month)}${m(this.day)}`}compareTo(t){return this.year>t.year||this.year===t.year&&this.month>t.month||this.year===t.year&&this.month===t.month&&this.day>t.day?1:this.year===t.year&&this.month===t.month&&this.day===t.day?0:-1}before(t){return-1===this.compareTo(t)}toCalendar(t){return function(t,e,s,n,r,i,o){const a=new Date(Date.UTC(e,s,n,r||0,i||0,o||0)),h=t.offset_utc(+a);return new Date(a.valueOf()-h)}(t??y("Etc/UTC"),this.year,this.month-1,this.day)}addDays(t){const e=this.toCalendar(y("Etc/UTC"));return u(e,t),O.fromCalendar(e)}firstDayOfYear(){return new O(this.year,1,1)}getDayOfWeek(){return null===this._dayOfWeek&&(this._dayOfWeek=f(this.toCalendar())),this._dayOfWeek}
+static fromCalendar(t){return new O(r(t),i(t)+1,h(t))}}var D;!function(t){t[t.LeftFirst=-1]="LeftFirst",t[t.Unchanged=0]="Unchanged",t[t.RightFirst=1]="RightFirst"}(D||(D={}));const x="A";function S(t){return t>=0?0:t%n==0?-t/n:1-Math.trunc(t/n)}function C(t,e){return t.compareTo(e)}var k;!function(t){t[t.None=0]="None",t[t.ExtendedEntry=1]="ExtendedEntry",t[t.OffsetEntry=2]="OffsetEntry",t[t.UnifiedEntry=3]="UnifiedEntry",t[t.UnifiedShiftedEntry=4]="UnifiedShiftedEntry"}(k||(k={}));class T{constructor(t,e,s){this.decoratorType=0,(0,E.assert)(Number.isFinite(t)&&Number.isFinite(e)&&Number.isFinite(s),"Invalid arguments"),this._dayOfWeek=t,this._start=e,this._length=s}start(){return this._start+n*this.sessionStartDaysOffset()}startOffset(){return this._start}endOffset(){return this._start+this._length}sessionStartDaysOffset(){return S(this._start)}isOvernight(){return this._start<0}dayOfWeek(){return this._dayOfWeek}sessionStartDayOfWeek(){let t=this._dayOfWeek-this.sessionStartDaysOffset();return t<1&&(t+=7),t}length(){return this._length}isExtended(){return!1}extendedStartOffset(){return this.startOffset()}extendedEndOffset(){return this.endOffset()}compareTo(t){const e=this._weight(),s=e+this._length,n=t._weight(),r=n+t._length;return e<=n&&n<s||n<=e&&e<r?0:e>n?1:-1}contains(t){return this._contains(d(t),f(t))}_weight(){return this._dayOfWeek*n+this._start}_contains(t,e){let s=e-this._dayOfWeek;s>0&&(s-=7);const r=s*n+t;return r>=this._start&&r<this._start+this._length}}class v extends T{constructor(t,e){super(t.dayOfWeek(),t.startOffset(),t.length()),this.decoratorType=2,this._entry=t,this._barsOffset=e}getEntry(){return this._entry}barsOffset(){return this._barsOffset}isExtended(){return this._entry.isExtended()}extendedStartOffset(){return this._entry.extendedStartOffset()}extendedEndOffset(){return this._entry.extendedEndOffset()}}class $ extends T{constructor(t,e,s){super(t.dayOfWeek(),t.startOffset(),t.length()),this.decoratorType=1,this._entry=t,this._extendedStartOffset=e,this._extendedEndOffset=s}getEntry(){return this._entry}isExtended(){return!0}extendedStartOffset(){return this._extendedStartOffset}extendedEndOffset(){return this._extendedEndOffset}extendedStartDaysOffset(){return S(this._extendedStartOffset)}extendedEndDaysOffset(){return S(this._extendedEndOffset)}}class W extends T{constructor(t,e){super(t.dayOfWeek(),t.startOffset(),t.length()),this.decoratorType=3,this._entry=t,this._unifiedEntries=e,e.push(this)}getEntry(){return this._entry}getUnifiedEntries(){return this._unifiedEntries}hasExtendedEntry(){return this._unifiedEntries.some((t=>t.isExtended()))}isExtended(){return this._entry.isExtended()}extendedStartOffset(){return this._entry.extendedStartOffset()}extendedEndOffset(){return this._entry.extendedEndOffset()}}class A extends T{constructor(t,e){super(t.dayOfWeek(),t.startOffset(),t.length()),this.decoratorType=4,this._entry=t,this._unifiedEntries=e,e.push(this)}getEntry(){return this._entry}getUnifiedEntries(){return this._unifiedEntries}hasExtendedEntry(){
+return this._unifiedEntries.some((t=>t.isExtended()))}isExtended(){return this._entry.isExtended()}extendedStartOffset(){return this._entry.extendedStartOffset()}extendedEndOffset(){return this._entry.extendedEndOffset()}}class b{constructor(t,e,s,n){this._maxTradingDayLength=null,this._list=t,this._entriesByDay=e,this._firstDayOfWeek=s,this._weekEndsCount=n}firstDayOfWeek(){return this._firstDayOfWeek}entriesByDay(){return this._entriesByDay}list(){return this._list}isWeekEnd(t){return!this._entriesByDay.has(t)}weekEndsCount(){return this._weekEndsCount}longestSessionLength(){return 0===this._list.length?0:Math.max(...this._list.map((t=>t.length())))}maxTradingDayLength(){if(null==this._maxTradingDayLength){const t=new Map;for(const e of this._list){const s=e.dayOfWeek();t.set(s,e.length()+(t.get(s)??0))}let e=0;t.forEach((t=>{e=Math.max(e,t)})),this._maxTradingDayLength=e}return this._maxTradingDayLength}}class M{constructor(t,e,s){this._startDay=t,this._entries=s,this._specEndDay=e}getEntries(){return this._entries}getStartDay(){return this._startDay}getSpecEndDay(){return this._specEndDay}isOpenEnded(){return null==this._specEndDay}}const F=[2,3,4,5,6],N=[1,2,3,4,5,6,7];function U(t){return t>=48&&t<=57}const H=[0,31,28,31,30,31,30,31,31,30,31,30,31];class I extends Map{constructor(){super(...arguments),this._keyStringsToKey=new Map}get(t){const e=this._keyStringsToKey.get(t.toString());return e&&super.get(e)}set(t,e){const s=t.toString(),n=this._keyStringsToKey.get(s);return void 0!==n&&super.delete(n),this._keyStringsToKey.set(s,t),super.set(t,e)}has(t){return this._keyStringsToKey.has(t.toString())}}function z(t){return t.length>0}function L(t){return 0===t?n:t}function K(t,e,s,n){return s===n&&e<=t?s+1:s}function V(t,e){if(t<0||t>=7)throw new Error(`error parsing session, ${e} cannot be outside [0,7), ${e}=${t}`)}class j{constructor(){this.historyEntries=[],this.timezone="",this.adjustSessionsIndexes=null}parseSessions(t,e){this._parseHistoryEntries(t,e,!1)}parseSessionsAndValidateDateTime(t,e){this._parseHistoryEntries(t,e,!0)}static parseHolidaysAndCorrections(t,e,s,n){return this._parseHolidaysAndCorrectionsImpl(t,e,s,n)}static parseHolidaysAndCorrectionsAndValidateDateTime(t,e,s){return this._parseHolidaysAndCorrectionsImpl(t,e,s,!0)}_clearAll(){this.timezone="",this.historyEntries=[],this.adjustSessionsIndexes=[]}_parseHistoryEntries(t,e,s){this._clearAll();const n=e.split("/");let r=null,i=null;this.hasHistoryCorrections=n.length>1;for(let e=0;e<n.length;e++){const o=n[e].split("#");let a=null;if(e!==n.length-1){if(2!==o.length)throw new Error(`bad session history entry definition: ${n[e]}`);a=j._parseDay(o[1],"session history entry end",s).toCalendar()}else{if(1!==o.length)throw new Error(`bad session history entry definition: ${n[e]}`);a=null}if(null!==i&&null!==a&&a.getTime()<i.getTime())throw new Error(`history sessions are not listed in ascending order (${i} -> ${a}`);const h=this._parseSessionsImpl(t,o[0],s);r=this._adjustStartToPreviousSession(h.firstDayOfWeek());const f=new M(r,a,h)
+;this.historyEntries.push(f),i=a}}_parseSessionsImpl(t,e,s){this.timezone=t,e=this._parseFirstDayOfWeek(e);const n=new Map,r=[];if("24x7"===e.toLowerCase())for(const t of N){const e=j._createSessionEntry(t,0,0,0,0);r.push(e);const s=[];s.push(e),n.set(t,s)}else{let t=!1;const i=new Map;for(const s of e.split("|")){const e=s.split(":").filter(z);if(1!==e.length&&2!==e.length)throw new Error(`bad session section: ${s}`);const n=1===e.length;if(n){if(t)throw new Error(`duplicated default section: ${s}`);t=!0}const r=n?F:j._parseWorkingDays(e[1]);for(const t of r)n&&i.has(t)||i.set(t,e[0])}for(const t of N){const e=i.get(t);if(void 0===e)continue;const o=j._parseSessionDay(t,e,s);let a=n.get(t);void 0===a&&(a=[],n.set(t,a));for(const t of o)a.push(t),r.push(t)}}r.sort(C);const i=new Set;for(const t of r)i.add(t.dayOfWeek());const o=7-i.size;return new b(r,n,this._firstDayOfWeek,o)}_parseFirstDayOfWeek(t){const e=t.split(";");if(this._firstDayOfWeek=2,e.length>2)throw new Error(`bad sessions spec: ${t}`);if(1===e.length)return t;let s=1;let n=e[0].indexOf("-")>=0?NaN:parseInt(e[0]);if(isNaN(n)&&(s=0,n=parseInt(e[1])),n<1||n>7)throw new Error(`bad sessions spec: ${t}`);return this._firstDayOfWeek=n,e[s]}_adjustStartToPreviousSession(t){if(0===this.historyEntries.length)return null;const e=(0,E.ensureNotNull)(this.historyEntries[this.historyEntries.length-1].getSpecEndDay()),s=t-f(e);if(0===s)return e;const n=c(e);return u(n,s),e.getTime()<n.getTime()||u(n,7),n}static _parseSessionDay(t,e,s){const n=[];for(const r of e.split(",").filter(z))if(r.includes("U")){const i=r.split("U"),o=[];for(let r=0;r<i.length;r++){const a=this._parseUnifiedInterval(t,e,i[r],0===r,s);n.push(new W(a,o))}o.sort(C)}else if(r.includes("S")){const i=r.split("S"),o=[];for(let r=0;r<i.length;r++){const a=this._parseUnifiedInterval(t,e,i[r],0===r,s);n.push(new A(a,o))}o.sort(C)}else n.push(this._parseSessionEntry(t,r,s));return n}static _parseUnifiedInterval(t,e,s,n,r){if(!n&&s.includes(x))throw new Error(`bad session: ${e}. Unified intervals can contain only one '${x}'. Specify '${x}' only for the first interval`);return this._parseSessionEntry(t,s,r)}static _parseSessionEntry(t,e,s){const n=e.split("E");if(n.length>2)throw new Error(`bad session: ${e}. Only one 'E' is allowed per session interval`);const r=n[0].split(x);if(r.length>2)throw new Error(`bad session: ${e}. Only one '${x}' is allowed per session interval`);const i=r[0].split("-");if(2!==i.length)throw new Error(`bad session: ${e}`);let o=0,a=i[0];if(a.includes("F")){const t=a.split("F");a=t[0],o=""!==t[1]?parseInt(t[1]):1}let h=0,f=i[1];if(f.includes("F")){const t=f.split("F");f=t[0],h=""!==t[1]?parseInt(t[1]):1}const d=this._minutesFromHHMM(a,e,s),u=this._minutesFromHHMM(f,e,s);let c=this._createSessionEntry(t,d,u,o,h);if(2===r.length){const t=this._minutesFromHHMM(r[1],e,s);c=this._decorateWithOffset(c,t,d,u,o,h)}if(2===n.length){const t=n[1].split("-");if(2!==t.length)throw new Error(`bad session: ${e}. Incorrect extended interval`);let r=0,i=t[0];if(i.includes("F")){
+const t=i.split("F");i=t[0],r=""!==t[1]?parseInt(t[1]):1}let o=0,a=t[1];if(a.includes("F")){const t=a.split("F");a=t[0],o=""!==t[1]?parseInt(t[1]):1}const h=this._minutesFromHHMM(i,e,s),f=this._minutesFromHHMM(a,e,s);c=this._decorateWithExtension(c,h,f,r,o)}return c}static _minutesFromHHMM(t,e,s){if(4===t.length&&U(t.charCodeAt(0))&&U(t.charCodeAt(1))&&U(t.charCodeAt(2))&&U(t.charCodeAt(3))){const e=parseInt(t),n=Math.trunc(e/100),r=e%100;if(!s||n<24&&r<60)return r+60*n}throw new Error(`incorrect entry syntax: ${e}`)}static _parseDay(t,e,s){if(8===t.length&&U(t.charCodeAt(0))&&U(t.charCodeAt(1))&&U(t.charCodeAt(2))&&U(t.charCodeAt(3))&&U(t.charCodeAt(4))&&U(t.charCodeAt(5))&&U(t.charCodeAt(6))&&U(t.charCodeAt(7))){const e=parseInt(t.substring(0,4)),n=parseInt(t.substring(4,6)),r=parseInt(t.substring(6,8));if(!s||this._isValidDayOfMonth(r,n,e))return new O(e,n,r)}throw new Error(`bad ${e} date: ${t}`)}static _isValidDayOfMonth(t,e,s){return!(e<1||e>12)&&(!(t<1||t>H[e])||!(2!==e||29!==t||!l(s)))}static _parseWorkingDays(t){const e=[];for(let s=0;s<t.length;s++){const n=t.charCodeAt(s)-48;if(n<1||n>7)throw new Error(`Invalid days specification: ${t}`);e.includes(n)||e.push(n)}return e}static _createSessionEntry(t,e,s,r,i){if(V(r,"startDaysAgo"),V(i,"endDaysAgo"),(r=K(e,s=L(s),r,i))<i)throw new Error(`error parsing session, violation startDaysAgo >= endDaysAgo, startDaysAgo=${r}, endDaysAgo=${i}`);r>0&&(e-=r*n),i>0&&(s-=i*n);const o=s-e;if(!(t>=1&&t<=7&&e<n&&o>0))throw new Error("error parsing session, invalid data");return new T(t,e,o)}static _decorateWithExtension(t,e,s,r,i){if(V(r,"extended.startDaysAgo"),V(i,"extended.endDaysAgo"),(r=K(e,s=L(s),r,i))>0&&(e-=r*n),i>0&&(s-=i*n),e===t.startOffset()&&s===t.endOffset())return t;if(e>t.startOffset()||s<t.endOffset())throw new Error("error parsing session, extended interval must be wider than or equal to the base interval");return new $(t,e,s)}static _decorateWithOffset(t,e,s,r,i,o){return e===s?t:(i=K(s,r=L(r),i,o),e>s&&(e-=n),i>0&&(e-=i*n),new v(t,e))}static _parseHolidaysAndCorrectionsImpl(t,e,s,n){const r=new I;if(""!==e){const t=[];for(const s of e.split(",")){const e=this._parseDay(s,"holiday",n);r.set(e,t)}}if(""===s)return r;for(const t of s.split(";")){const e=t.split(":");if(2!==e.length)throw new Error(`bad correction section: ${t}`);if("dayoff"===e[0])for(const t of e[1].split(",")){const e=this._parseDay(t,"correction",n);r.set(e,[])}else for(const t of e[1].split(",")){const s=this._parseDay(t,"correction",n),i=f(s.toCalendar()),o=this._parseSessionDay(i,e[0],n);r.set(s,o)}}return r}}new Set(["__proto__","prototype","constructor"]);Array.isArray;function R(t,e){if(!function(t){return"number"==typeof t&&isFinite(t)}(t))return"n/a";if(!function(t){return"number"==typeof t&&t%1==0}(e))throw new TypeError("invalid length");if(e<0||e>24)throw new TypeError("invalid length");if(0===e)return t.toString();return("00000000000000000000"+t.toString()).slice(-e)}Number.isNaN=Number.isNaN||function(t){return t!=t};var B=s(136);function q(t){for(;t>n;)t-=n
+;const e=t%60,s=R((t-e)/60,2)+":"+R(e,2);return(0,B.isRtl)()?(0,B.startWithLTR)(s):s}const P=new j,Y=[2,3,4,5,6,7,1],G=Y.reduce(((t,e)=>(t[e<7?e+1:1]=new Date(2018,0,e).toLocaleString(window.navigator.language,{weekday:"short"}),t)),{}),J=document.querySelector("#result"),Q=document.querySelector("#session");function X(t){if(null===J)return;try{P.parseSessions("Etc/UTC",t)}catch(t){return void(J.textContent=t.message)}const e=function(t,e,s){const{weekDays:n,closed:r}=s;return e.map((e=>{const s=t.filter((t=>t.dayOfWeek()===e)),i=`${n[e]} `;if(0===s.length)return`${i}${r}`;const o=s.map((t=>{const e=t.sessionStartDayOfWeek(),s=t.sessionStartDaysOffset(),r=function(t,e){let s=t+e;for(;s>7;)s-=7;return s}(e,s===t.sessionStartDaysOffset()+t.length()?0:s),i=e!==t.dayOfWeek()||r!==t.dayOfWeek(),o=i?n[e]:"",a=i?n[r]:"";return`${q(t.start())}${o}-${q(t.start()+t.length())}${a}`}));return`${i}${o.join(", ")}`}))}(P.historyEntries[0].getEntries().list(),Y,{weekDays:G,closed:"Closed"});J.innerHTML="",J.appendChild(function(t){const e=document.createElement("table"),s=document.createElement("tbody");for(const e of t){const t=document.createElement("tr"),n=document.createElement("td");n.textContent=e,t.appendChild(n),s.appendChild(t)}return e.appendChild(s),e}(e))}Q?.addEventListener("input",(()=>{X(Q.value)})),X(Q?.value||"")})()})();</script></body></html>
