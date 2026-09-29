@@ -328,7 +328,7 @@ const Chart: React.FC<ChartProps> = ({
           "scalesProperties.showRightScale": true, // Enable right scale
         },
       };
-      const chart = new TradingView.widget(widgetOptions);
+      const chart = new TradingView.widget(widgetOptions as never);
       return () => {
         chart.remove();
       };
