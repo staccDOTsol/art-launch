@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Pump",
+  title: "art",
   description:
     "Launch a coin that is instantly tradeable without having to seed liquidity.",
 };

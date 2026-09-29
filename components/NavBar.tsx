@@ -34,7 +34,7 @@ const NavBar = ({ children }: { children: React.ReactNode }) => {
           <Link href="/board">
             <Image
               src="/logo.png"
-              alt="Pump"
+              alt="art"
               width={25}
               height={25}
               className="mr-4"
@@ -45,7 +45,7 @@ const NavBar = ({ children }: { children: React.ReactNode }) => {
             <div className="flex gap-2">
               <a
                 className="text-sm text-white hover:underline hover:font-bold"
-                href="https://twitter.com/pumpdotfun"
+                href="https://x.com/STACCoverflow"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -54,7 +54,7 @@ const NavBar = ({ children }: { children: React.ReactNode }) => {
 
               <a
                 className="text-sm text-white hover:underline hover:font-bold"
-                href="https://t.me/pumpfunsupport"
+                href="https://x.com/STACCoverflow"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -65,7 +65,7 @@ const NavBar = ({ children }: { children: React.ReactNode }) => {
             <div className="flex gap-2">
               <a
                 className="text-sm text-white hover:underline hover:font-bold"
-                href="https://t.me/launchonpump"
+                href="https://deck.squarefun.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
               >

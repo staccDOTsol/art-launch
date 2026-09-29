@@ -56,7 +56,7 @@ export default function LinkTg({
         <div className="grid gap-2 justify-items-center">
           <h1>Hello @{username}!</h1>
 
-          <div>Enter your code to link your address to Pump Pal</div>
+          <div>Enter your code to link your address to art pal</div>
 
           <p className="text-xs">
             (The code should have been sent to you from the @PumpPal telegram

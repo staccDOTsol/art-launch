@@ -177,7 +177,7 @@ const Chart: React.FC<ChartProps> = ({
               type: "crypto",
               session: "24x7",
               timezone: "Etc/UTC",
-              exchange: "Pump",
+              exchange: "art",
               has_seconds: true,
               seconds_multipliers: ["1"],
               minmov: 1,
