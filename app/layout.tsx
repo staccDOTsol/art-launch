@@ -13,9 +13,8 @@ import { ProfileProvider } from "@/providers/ProfileProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Pump",
-  description:
-    "Launch a coin that is instantly tradeable without having to seed liquidity.",
+  title: "art — launch on art",
+  description: "solana on art — every wallet, every token, already there. the k-th write pays k².",
 };
 
 export default function RootLayout({
