@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Oval } from "react-loader-spinner";
+import { buildDepositTx, buildRedeemTx, getQuote, vaultPDA } from "@/lib/bridge";
 
 const BRIDGE_ID = "7ZPmg22B2BZh6SEVN21rNmymrBZrspPdoggNRfjkrdXE";
 const MAINNET_ART = "6XNdGz7yPugz4ZcWyBssFMkBZ91KmyDeqtjapUJ2pump";
@@ -18,6 +19,50 @@ export default function BridgePage() {
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [mode, setMode] = useState<"deposit" | "redeem">("deposit");
+
+  const submit = useCallback(async () => {
+    if (!publicKey) {
+      setVisible(true);
+      return;
+    }
+    const amt = parseFloat(amount);
+    if (!amt || amt <= 0) {
+      setMsg("enter an amount");
+      return;
+    }
+    setBusy(true);
+    setMsg("");
+    try {
+      const q = await getQuote();
+      if (!q) {
+        setMsg("vault not initialized yet");
+        return;
+      }
+      const isDeposit = mode === "deposit";
+      const result = isDeposit
+        ? q.depositQuote?.(amt) ?? 0
+        : q.redeemQuote?.(amt) ?? 0;
+      setMsg(
+        isDeposit
+          ? `locking ${amt} mainnet $ART → minting ~${result} art-side $ART (1% fee in vault)`
+          : `burning ${amt} art-side $ART → releasing ~${result} mainnet $ART (1% fee in vault)`
+      );
+      // TODO: build + sign + send the actual tx via signTransaction once vault is live
+      // const tx = isDeposit
+      //   ? await buildDepositTx(publicKey, BigInt(Math.floor(amt * 1e6)))
+      //   : await buildRedeemTx(publicKey, BigInt(Math.floor(amt * 1e6)));
+      // const signed = await signTransaction(tx);
+      // const sig = await connection.sendRawTransaction(signed.serialize());
+      // setMsg(`sent: ${sig}`);
+    } catch {
+      setMsg("bridge unreachable — is the chain up?");
+    } finally {
+      setBusy(false);
+    }
+  }, [publicKey, signTransaction, connection, amount, mode, setVisible]);
+
+  const deposit = submit;
 
   const deposit = useCallback(async () => {
     if (!publicKey || !signTransaction) {
@@ -65,19 +110,26 @@ export default function BridgePage() {
           />
           <Button
             className="bg-gray-300 text-primary hover:text-slate-50"
-            onClick={deposit}
+            onClick={submit}
             disabled={busy}
           >
-            {busy ? <Oval color="white" height={20} width={20} /> : "lock →"}
+            {busy ? <Oval color="white" height={20} width={20} /> : mode === "deposit" ? "lock →" : "← redeem"}
           </Button>
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => router.push("/board")}
+            variant={mode === "deposit" ? "default" : "outline"}
+            className="flex-1 text-xs"
+            onClick={() => setMode("deposit")}
           >
-            ← board
+            deposit
+          </Button>
+          <Button
+            variant={mode === "redeem" ? "default" : "outline"}
+            className="flex-1 text-xs"
+            onClick={() => setMode("redeem")}
+          >
+            redeem
           </Button>
         </div>
         {msg && <div className="text-sm text-slate-300 text-center">{msg}</div>}
