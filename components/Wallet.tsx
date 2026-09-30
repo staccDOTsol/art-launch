@@ -143,7 +143,7 @@ export function Wallet() {
 
                   <div className="grid justify-items-start gap-1">
                     <div>
-                      @{user?.username || publicKey.toBase58().slice(0, 6)}
+                      @{user?.username || publicKey?.toBase58().slice(0, 6) || ""}
                     </div>
 
                     <EditProfile />
