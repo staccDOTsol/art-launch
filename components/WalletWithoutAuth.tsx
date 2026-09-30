@@ -37,7 +37,7 @@ export function WalleWithoutAuth() {
               />
             </Avatar>
             <span className="text-white">
-              {publicKey.toBase58().slice(0, 6) + "..."}
+              {(publicKey?.toBase58() || "").slice(0, 6) + "..."}
             </span>
           </Button>
         ) : (
@@ -101,7 +101,7 @@ export function WalleWithoutAuth() {
           {publicKey && (
             <div className="grid gap-4 justify-center mt-6">
               <div className="text-sm border border-white rounded p-2">
-                {publicKey.toBase58()}
+                {publicKey?.toBase58() || ""}
               </div>
 
               <Button

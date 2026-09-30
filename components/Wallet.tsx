@@ -66,7 +66,7 @@ export function Wallet() {
                 />
               </div>
 
-              <div>{user?.username || publicKey.toBase58().slice(0, 6)}</div>
+              <div>{user?.username || (publicKey?.toBase58() || "").slice(0, 6)}</div>
 
               <TriangleDownIcon />
             </div>
