@@ -14,12 +14,12 @@ export const useCoin = (token: string) => {
       `${process.env.NEXT_PUBLIC_CLIENT_API_URL}/coins/${token}`
     ).then((r) => r.json());
 
-    coin.image_uri = coin.image_uri.replace(
+    coin.image_uri = coin.image_uri?.replace(
       "https://cf-ipfs.com/ipfs/",
       ipfsPrefix
     );
 
-    coin.metadata_uri = coin.metadata_uri.replace(
+    coin.metadata_uri = coin.metadata_uri?.replace(
       "https://cf-ipfs.com/ipfs/",
       ipfsPrefix
     );

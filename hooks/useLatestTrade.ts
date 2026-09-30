@@ -10,7 +10,7 @@ export const useLatestTrade = () => {
 
     const latestTrade = await fetch(
       `${process.env.NEXT_PUBLIC_CLIENT_API_URL}/trades/latest`
-    ).then((r) => r.json());
+    ).then((r) => r.text()).then((t) => t ? JSON.parse(t) : null);
 
     setLatestTrade(latestTrade);
     setLoading(false);
