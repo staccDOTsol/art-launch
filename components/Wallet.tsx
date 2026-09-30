@@ -151,7 +151,7 @@ export function Wallet() {
                 </div>
 
                 <div className="text-xs sm:text-sm border border-white rounded p-2">
-                  {publicKey.toBase58()}
+                  {publicKey?.toBase58() || ""}
                 </div>
 
                 <Button
