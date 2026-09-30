@@ -62,8 +62,6 @@ export default function BridgePage() {
     }
   }, [publicKey, signTransaction, connection, amount, mode, setVisible]);
 
-  const deposit = submit;
-
   const deposit = useCallback(async () => {
     if (!publicKey || !signTransaction) {
       setVisible(true);
