@@ -38,7 +38,7 @@ export function Wallet() {
   const { loginToken, login, loginLoading, user } = useProfile();
   const { solBalance } = useSolBalance(publicKey?.toBase58());
 
-  const requiresLogin = Boolean(publicKey && !loginToken);
+  const requiresLogin = false;
 
   useEffect(() => {
     if (requiresLogin) login();
@@ -82,28 +82,6 @@ export function Wallet() {
         <>
           {(() => {
             if (requiresLogin) {
-              return (
-                <div className="grid gap-4 justify-items-center">
-                  <div>Sign in to art</div>
-
-                  {loginLoading ? (
-                    <div className="flex gap-4 py-2 px-4 border border-white rounded-full w-fit">
-                      <div>Confirm in your wallet</div>
-                      <Oval color="white" height={24} width={24} />
-                    </div>
-                  ) : (
-                    <Button
-                      className="bg-gray-300 text-primary hover:text-slate-50"
-                      onClick={() => login()}
-                    >
-                      Sign message
-                    </Button>
-                  )}
-                </div>
-              );
-            }
-
-            if (!publicKey) {
               return (
                 <div className="grid gap-4">
                   <div>Connect your wallet</div>
