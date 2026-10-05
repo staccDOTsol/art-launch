@@ -22,14 +22,12 @@ import {
   CloverWalletAdapter,
   CoinhubWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
 import {
   WalletAdapterNetwork,
   isIosAndRedirectable,
 } from "@solana/wallet-adapter-base";
 import { useIsClient } from "@uidotdev/usehooks";
 import { isMobile } from "react-device-detect";
-import { useRpcUrl } from "./RpcUrlProvider";
 
 export const SolanaWalletProvider = ({
   children,
@@ -37,9 +35,10 @@ export const SolanaWalletProvider = ({
   children: React.ReactNode;
 }) => {
   const isClient = useIsClient();
-  const { rpcUrl } = useRpcUrl();
-
-  const endpoint = rpcUrl as string;
+  // This isolated deployment exposes only the model page and Solana mainnet.
+  const endpoint = typeof window === "undefined"
+    ? "https://api.mainnet-beta.solana.com"
+    : `${window.location.origin}/api/model-mainnet-rpc`;
 
   const wallets = useMemo(
     () => [
@@ -62,16 +61,15 @@ export const SolanaWalletProvider = ({
         options: {
           // projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PJ_ID,
           metadata: {
-            name: "Pump",
-            description:
-              "Launch a coin that is instantly tradeable without having to seed liquidity. Deploy a coin on Solana for under 2$ in one click.",
-            url: "https://pump.fun/",
-            icons: ["https://pump.fun/_next/image?url=%2Flogo.png&w=64&q=75"],
+            name: "STACCPAD CHAT",
+            description: "Trade the model token on Solana mainnet and chat on the model chain.",
+            url: "https://model.squarefun.xyz",
+            icons: ["https://model.squarefun.xyz/sea-chat-token.jpg"],
           },
         },
       }),
     ],
-    []
+    [endpoint]
   );
 
   useEffect(() => {
@@ -85,8 +83,8 @@ export const SolanaWalletProvider = ({
   }, [isClient]);
 
   return (
-    <ConnectionProvider endpoint={endpoint as string}>
-      <WalletProvider wallets={wallets} autoConnect>
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider key={endpoint} wallets={wallets} autoConnect>
         {children}
       </WalletProvider>
     </ConnectionProvider>

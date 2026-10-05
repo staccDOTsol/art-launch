@@ -224,35 +224,38 @@ const Chart: React.FC<ChartProps> = ({
               try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
-                candlesticks = data;
+                if (Array.isArray(data)) candlesticks = data;
               } catch (error) {
                 console.error("Failed to fetch candlesticks:", error);
                 // Handle errors (e.g., network issues, invalid responses) here
               }
+
+              const filteredBars = candlesticks
+                .filter((candlestick) => {
+                  const candleTime = candlestick.timestamp * 1000;
+                  return (
+                    candleTime >= periodParams.from * 1000 &&
+                    candleTime <= periodParams.to * 1000
+                  );
+                })
+                .map((candlestick) => ({
+                  time: candlestick.timestamp * 1000,
+                  low: candlestick.low,
+                  high: candlestick.high,
+                  open: candlestick.open,
+                  close: candlestick.close,
+                  volume: candlestick.volume,
+                }));
+
+              // noData: true when the window is empty so TradingView stops
+              // paginating backwards — returning noData: false forever makes it
+              // request older ranges endlessly
+              onHistoryCallback(filteredBars, {
+                noData: filteredBars.length === 0,
+              });
             }
 
-            const filteredBars = candlesticks
-              .filter((candlestick) => {
-                const candleTime = candlestick.timestamp * 1000;
-                return (
-                  candleTime >= periodParams.from * 1000 &&
-                  candleTime <= periodParams.to * 1000
-                );
-              })
-              .map((candlestick) => ({
-                time: candlestick.timestamp * 1000,
-                low: candlestick.low,
-                high: candlestick.high,
-                open: candlestick.open,
-                close: candlestick.close,
-                volume: candlestick.volume,
-              }));
-            console.log(filteredBars);
-            if (filteredBars.length > 0) {
-              onHistoryCallback(filteredBars, { noData: false });
-            } else {
-              onHistoryCallback([], { noData: true });
-            }
+            doFetch();
           },
           subscribeBars: (
             symbolInfo: any,
@@ -333,7 +336,10 @@ const Chart: React.FC<ChartProps> = ({
         chart.remove();
       };
     }
-  }, [isTVScriptLoaded, candlesticks, height, widthScale]);
+    // NB: deliberately NOT re-creating the widget on candlesticks/height changes —
+    // each widget instance fetches its own bars; re-creating on every state change
+    // stacks widgets and hammers the candles endpoint
+  }, [isTVScriptLoaded, symbol, coin.mint]);
 
   return (
     <div className="grid h-fit gap-2">

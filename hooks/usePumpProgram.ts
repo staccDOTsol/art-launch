@@ -17,11 +17,7 @@ export const usePumpProgram = () => {
       {}
     );
 
-    const pumpProgram = new Program(
-      pumpIdl as Idl,
-      new PublicKey(process.env.NEXT_PUBLIC_PUMP_PROGRAM_ID as string),
-      anchorProvider
-    );
+    const pumpProgram = new Program(pumpIdl as unknown as Idl, anchorProvider);
 
     setPumpProgram(pumpProgram);
   }, [connection, wallet]);

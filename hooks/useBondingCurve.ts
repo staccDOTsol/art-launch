@@ -15,6 +15,7 @@ export interface BondingCurve {
   realSolReserves: BN;
   tokenTotalSupply: BN;
   complete: boolean;
+  isMayhemMode?: boolean;
 }
 
 export const useBondingCurve = (coin?: Coin) => {
@@ -36,9 +37,21 @@ export const useBondingCurve = (coin?: Coin) => {
     setLoading(true);
 
     // query the curve
-    const bondingCurve = await pumpProgram.account.bondingCurve.fetch(
+    const fetched: any = await (pumpProgram as any).account.bondingCurve.fetch(
       coin.bonding_curve
     );
+
+    // new IDL names SOL "quote" — normalize to the legacy shape the UI quotes use
+    const bondingCurve = {
+      virtualTokenReserves: fetched.virtualTokenReserves,
+      virtualSolReserves: fetched.virtualQuoteReserves,
+      realTokenReserves: fetched.realTokenReserves,
+      realSolReserves: fetched.realQuoteReserves,
+      tokenTotalSupply: fetched.tokenTotalSupply,
+      complete: fetched.complete,
+      creator: fetched.creator,
+      isMayhemMode: fetched.isMayhemMode,
+    };
 
     setBondingCurve(bondingCurve as any);
     setLoading(false);

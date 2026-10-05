@@ -81,22 +81,13 @@ export function Wallet() {
       <DialogContent className="bg-primary text-white text-center">
         <>
           {(() => {
-            if (requiresLogin) {
+            if (requiresLogin || !publicKey) {
               return (
                 <div className="grid gap-4">
                   <div>Connect your wallet</div>
 
-                  {wallets.filter(
-                    (wallet) =>
-                      wallet.readyState === "Installed" ||
-                      wallet.readyState === "Loadable"
-                  ).length > 0 ? (
+                  {wallets.length > 0 ? (
                     wallets
-                      .filter(
-                        (wallet) =>
-                          wallet.readyState === "Installed" ||
-                          wallet.readyState === "Loadable"
-                      )
                       .map((wallet, index) => (
                         <div
                           className="flex justify-center items-center"

@@ -49,7 +49,7 @@ export const HolderDistribution = ({ coin }: { coin: Coin }) => {
               <div className="flex justify-between" key={index}>
                 <a
                   className="hover:underline"
-                  href={`https://solscan.io/account/${address.toBase58()}`}
+                  href={`https://solscan.io/account/${address.toBase58()}?cluster=custom&customUrl=https%3A%2F%2Frpc.squarefun.xyz`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

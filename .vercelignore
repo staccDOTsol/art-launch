@@ -1,0 +1,6 @@
+.env*
+.git
+.vercel
+node_modules
+.next
+id1-test.json

@@ -53,7 +53,33 @@ export const PriorityFeeProvider = ({
         Math.max(data.result.priorityFeeEstimate || 0, DEFAULT_PRIORITY_FEE)
       );
     } catch (e) {
-      console.error("failed to fetch priority fee", e);
+      // art's RPC predates getPriorityFeeEstimate — fall back to
+      // getRecentPrioritizationFees, else keep the default
+      try {
+        const data = await fetch(rpcUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "getRecentPrioritizationFees",
+            params: [[process.env.NEXT_PUBLIC_PUMP_PROGRAM_ID]],
+          }),
+        }).then((r) => r.json());
+        if (data?.result?.length) {
+          const levels = data.result
+            .map((r: any) => r.prioritizationFee)
+            .filter((f: any) => f > 0);
+          if (levels.length) {
+            const median = levels.sort((a: number, b: number) => a - b)[
+              Math.floor(levels.length / 2)
+            ];
+            setPriorityFee(Math.max(median, 1_000));
+          }
+        }
+      } catch {
+        // keep default — silent
+      }
     }
   };
 

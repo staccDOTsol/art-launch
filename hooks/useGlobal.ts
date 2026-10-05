@@ -26,11 +26,7 @@ export const useGlobal = () => {
 
     // construct anchor program interface
     const anchorProvider = new AnchorProvider(connection, null as any, {});
-    const pumpProgram = new Program(
-      pumpIdl as Idl,
-      new PublicKey(process.env.NEXT_PUBLIC_PUMP_PROGRAM_ID as string),
-      anchorProvider
-    );
+    const pumpProgram = new Program(pumpIdl as unknown as Idl, anchorProvider);
 
     const [globalPDA] = PublicKey.findProgramAddressSync(
       [utils.bytes.utf8.encode("global")],
@@ -38,7 +34,7 @@ export const useGlobal = () => {
     );
 
     // query the global
-    const global = await pumpProgram.account.global.fetch(globalPDA);
+    const global = await (pumpProgram as any).account.global.fetch(globalPDA);
 
     setGlobalPDA(globalPDA);
     setGlobal(global as any);

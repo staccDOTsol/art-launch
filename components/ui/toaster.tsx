@@ -72,7 +72,7 @@ export function Toaster() {
                 {status === "error" && <RxCross1 height={24} width={24} />}
 
                 <a
-                  href={`https://solscan.io/tx/${signature}`}
+                  href={`https://solscan.io/tx/${signature}?cluster=custom&customUrl=https%3A%2F%2Frpc.squarefun.xyz`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

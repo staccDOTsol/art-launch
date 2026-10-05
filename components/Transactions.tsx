@@ -126,7 +126,7 @@ const TradeRow = ({
       </div>
 
       <a
-        href={`https://solscan.io/tx/${signature}`}
+        href={`https://solscan.io/tx/${signature}?cluster=custom&customUrl=https%3A%2F%2Frpc.squarefun.xyz`}
         target="_blank"
         rel="noopener noreferrer"
         className="hidden sm:block text-right p-3 hover:text-blue-500 hover:underline"

@@ -16,9 +16,16 @@ import {
 } from "@solana/spl-token";
 
 export const BRIDGE_ID = new PublicKey(
-  "7ZPmg22B2BZh6SEVN21rNmymrBZrspPdoggNRfjkrdXE"
+  "6T2rjZXJRE15kUpavwJRCnFSmTsmeJJuWR29gBvG9FPY"
+);
+export const MIRROR_ART_MINT = new PublicKey(
+  "9ATDnAcNuBWwAnZamkUvVfuQDwybxT744zmDbgixTVby"
+);
+const TOKEN_2022 = new PublicKey(
+  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 );
 const ART_RPC = "https://rpc.squarefun.xyz";
+const MAINNET_RPC = "https://jarrett-solana-7ba9.mainnet.rpcpool.com/6dee9145-f5c7-466c-854e-edd7464c5ea8";
 export const MAINNET_ART_MINT = new PublicKey(
   "6XNdGz7yPugz4ZcWyBssFMkBZ91KmyDeqtjapUJ2pump"
 );
@@ -96,15 +103,20 @@ export async function getBridgeAccounts(
   const vaultMainnetAta = await getAssociatedTokenAddress(
     vaultState.mainnetMint,
     vault,
-    true
+    true,
+    TOKEN_2022
   );
   const userMainnetAta = await getAssociatedTokenAddress(
     vaultState.mainnetMint,
-    user
+    user,
+    false,
+    TOKEN_2022
   );
   const userMirrorAta = await getAssociatedTokenAddress(
     vaultState.mirrorMint,
-    user
+    user,
+    false,
+    TOKEN_2022
   );
   return {
     vault,
@@ -113,7 +125,7 @@ export async function getBridgeAccounts(
     userMainnetAta,
     userMirrorAta,
     user,
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: TOKEN_2022,
     systemProgram: SystemProgram.programId,
     rent: SYSVAR_RENT_PUBKEY,
   };
@@ -127,7 +139,7 @@ export async function buildInitializeTx(
   mirrorMint: PublicKey
 ): Promise<Transaction> {
   const conn = new Connection(ART_RPC);
-  const { recentBlockhash } = await conn.getLatestBlockhash();
+  const { blockhash: recentBlockhash } = await conn.getLatestBlockhash();
   const vault = vaultPDA();
 
   const ix = new TransactionInstruction({
@@ -152,7 +164,52 @@ export async function buildInitializeTx(
   return tx;
 }
 
-// ============ DEPOSIT ============
+// ============ LOCK (mainnet: lock real $ART) ============
+
+export async function buildLockTx(
+  user: PublicKey,
+  amount: bigint
+): Promise<Transaction | null> {
+  const conn = new Connection(MAINNET_RPC);
+  const state = await fetchVaultState();
+  if (!state) return null;
+  const vault = vaultPDA();
+  const vaultArtAta = await getAssociatedTokenAddress(
+    state.mainnetMint,
+    vault,
+    true,
+    TOKEN_2022
+  );
+  const userArtAta = await getAssociatedTokenAddress(
+    state.mainnetMint,
+    user,
+    false,
+    TOKEN_2022
+  );
+  const { blockhash: recentBlockhash } = await conn.getLatestBlockhash();
+
+  const amountBuf = Buffer.alloc(8);
+  amountBuf.writeBigUInt64LE(amount);
+
+  const tx = new Transaction().add(
+    new TransactionInstruction({
+      programId: BRIDGE_ID,
+      keys: [
+        { pubkey: vault, isSigner: false, isWritable: true },
+        { pubkey: vaultArtAta, isSigner: false, isWritable: true },
+        { pubkey: userArtAta, isSigner: false, isWritable: true },
+        { pubkey: user, isSigner: true, isWritable: true },
+        { pubkey: TOKEN_2022, isSigner: false, isWritable: false },
+      ],
+      data: Buffer.concat([anchorDiscriminator("lock"), amountBuf]),
+    })
+  );
+  tx.recentBlockhash = recentBlockhash;
+  tx.feePayer = user;
+  return tx;
+}
+
+// ============ DEPOSIT (art: fork-$ART -> m$ART sink) ============
 
 export async function buildDepositTx(
   user: PublicKey,
@@ -161,44 +218,55 @@ export async function buildDepositTx(
   const conn = new Connection(ART_RPC);
   const state = await fetchVaultState();
   if (!state) return null;
-  const accts = await getBridgeAccounts(user, state);
-  const { recentBlockhash } = await conn.getLatestBlockhash();
+  const vault = vaultPDA();
+  const vaultArtAta = await getAssociatedTokenAddress(
+    state.mainnetMint,
+    vault,
+    true,
+    TOKEN_2022
+  );
+  const userArtAta = await getAssociatedTokenAddress(
+    state.mainnetMint,
+    user,
+    false,
+    TOKEN_2022
+  );
+  const userMirrorAta = await getAssociatedTokenAddress(
+    state.mirrorMint,
+    user,
+    false,
+    TOKEN_2022
+  );
+  const { blockhash: recentBlockhash } = await conn.getLatestBlockhash();
 
   const amountBuf = Buffer.alloc(8);
   amountBuf.writeBigUInt64LE(amount);
 
   const ixs: TransactionInstruction[] = [];
-
-  // ensure user has mirror ATA
-  const mirrorAtaInfo = await conn.getAccountInfo(accts.userMirrorAta);
-  if (!mirrorAtaInfo) {
+  if (!(await conn.getAccountInfo(userMirrorAta))) {
     ixs.push(
       createAssociatedTokenAccountInstruction(
         user,
-        accts.userMirrorAta,
+        userMirrorAta,
         user,
-        state.mirrorMint
+        state.mirrorMint,
+        TOKEN_2022
       )
     );
   }
-
-  // deposit instruction
   ixs.push(
     new TransactionInstruction({
       programId: BRIDGE_ID,
       keys: [
-        { pubkey: accts.vault, isSigner: false, isWritable: true },
-        { pubkey: accts.mirrorMint, isSigner: false, isWritable: true },
-        { pubkey: accts.vaultMainnetAta, isSigner: false, isWritable: true },
-        { pubkey: accts.userMainnetAta, isSigner: false, isWritable: true },
-        { pubkey: accts.userMirrorAta, isSigner: false, isWritable: true },
-        { pubkey: accts.user, isSigner: true, isWritable: true },
-        { pubkey: accts.tokenProgram, isSigner: false, isWritable: false },
+        { pubkey: vault, isSigner: false, isWritable: true },
+        { pubkey: state.mirrorMint, isSigner: false, isWritable: true },
+        { pubkey: vaultArtAta, isSigner: false, isWritable: true },
+        { pubkey: userArtAta, isSigner: false, isWritable: true },
+        { pubkey: userMirrorAta, isSigner: false, isWritable: true },
+        { pubkey: user, isSigner: true, isWritable: true },
+        { pubkey: TOKEN_2022, isSigner: false, isWritable: false },
       ],
-      data: Buffer.concat([
-        anchorDiscriminator("deposit"),
-        amountBuf,
-      ]),
+      data: Buffer.concat([anchorDiscriminator("deposit"), amountBuf]),
     })
   );
 
@@ -208,7 +276,7 @@ export async function buildDepositTx(
   return tx;
 }
 
-// ============ REDEEM ============
+// ============ REDEEM (art: burn m$ART, mainnet pays out) ============
 
 export async function buildRedeemTx(
   user: PublicKey,
@@ -217,8 +285,14 @@ export async function buildRedeemTx(
   const conn = new Connection(ART_RPC);
   const state = await fetchVaultState();
   if (!state) return null;
-  const accts = await getBridgeAccounts(user, state);
-  const { recentBlockhash } = await conn.getLatestBlockhash();
+  const vault = vaultPDA();
+  const userMirrorAta = await getAssociatedTokenAddress(
+    state.mirrorMint,
+    user,
+    false,
+    TOKEN_2022
+  );
+  const { blockhash: recentBlockhash } = await conn.getLatestBlockhash();
 
   const sharesBuf = Buffer.alloc(8);
   sharesBuf.writeBigUInt64LE(shares);
@@ -227,18 +301,13 @@ export async function buildRedeemTx(
     new TransactionInstruction({
       programId: BRIDGE_ID,
       keys: [
-        { pubkey: accts.vault, isSigner: false, isWritable: true },
-        { pubkey: accts.mirrorMint, isSigner: false, isWritable: true },
-        { pubkey: accts.vaultMainnetAta, isSigner: false, isWritable: true },
-        { pubkey: accts.userMainnetAta, isSigner: false, isWritable: true },
-        { pubkey: accts.userMirrorAta, isSigner: false, isWritable: true },
-        { pubkey: accts.user, isSigner: true, isWritable: true },
-        { pubkey: accts.tokenProgram, isSigner: false, isWritable: false },
+        { pubkey: vault, isSigner: false, isWritable: true },
+        { pubkey: state.mirrorMint, isSigner: false, isWritable: true },
+        { pubkey: userMirrorAta, isSigner: false, isWritable: true },
+        { pubkey: user, isSigner: true, isWritable: true },
+        { pubkey: TOKEN_2022, isSigner: false, isWritable: false },
       ],
-      data: Buffer.concat([
-        anchorDiscriminator("redeem"),
-        sharesBuf,
-      ]),
+      data: Buffer.concat([anchorDiscriminator("redeem_cross"), sharesBuf]),
     })
   );
   tx.recentBlockhash = recentBlockhash;
@@ -253,7 +322,7 @@ export async function buildReportBurnTx(
   burnedShares: bigint
 ): Promise<Transaction | null> {
   const conn = new Connection(ART_RPC);
-  const { recentBlockhash } = await conn.getLatestBlockhash();
+  const { blockhash: recentBlockhash } = await conn.getLatestBlockhash();
   const vault = vaultPDA();
 
   const burnBuf = Buffer.alloc(8);

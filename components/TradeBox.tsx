@@ -35,6 +35,30 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
+import {
+  getMintTokenProgram,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+} from "../lib/utils";
+import {
+  PUMP_SDK,
+  OnlinePumpSdk,
+  getBuyTokenAmountFromSolAmount,
+  getSellSolAmountFromTokenAmount,
+} from "@pump-fun/pump-sdk";
+import { NATIVE_MINT } from "@solana/spl-token";
+
+// pump buyback vault + current buyback fee recipient (required remaining accounts)
+const BUYBACK_VAULT = new PublicKey(
+  "7xYAvMQbZALbPiFHwV9YZu96aq2LrzqQmMHx6id4mybh"
+);
+const buybackRemainingAccounts = (global: any) => [
+  { pubkey: BUYBACK_VAULT, isWritable: true, isSigner: false },
+  { pubkey: (global?.buybackFeeRecipients || [BUYBACK_VAULT])[0], isWritable: true, isSigner: false },
+];
+
+// mayhem coins must use reserved fee recipients
+const feeRecipientFor = (global: any, isMayhemMode?: boolean) =>
+  isMayhemMode ? global?.reservedFeeRecipient ?? global?.feeRecipient : global?.feeRecipient;
 import Info from "./Info";
 import clsx from "clsx";
 import { useToast } from "./ui/use-toast";
@@ -144,58 +168,69 @@ export default function TradeBox({
   const buy = async (comment?: string) => {
     try {
       if (!amount) return;
-      if (!bondingCurve) return;
-      if (!pumpProgram) return;
-      if (!global) return;
-      if (!globalPDA) return;
       if (!wallet) return;
       if (!signTransaction) return;
       if (!publicKey) return;
 
-      let tokensToBuy = new BN(0);
-      let solRequired = new BN(0);
+      const mint = new PublicKey(coin.mint);
+      const tokenProgram = await getMintTokenProgram(connection, coin.mint);
+      const onlineSdk = new OnlinePumpSdk(connection);
+      const [sdkGlobal, feeConfig] = await Promise.all([
+        onlineSdk.fetchGlobal(),
+        onlineSdk.fetchFeeConfig(),
+      ]);
+      const bondingCurveAccountInfo = (await connection.getAccountInfo(
+        new PublicKey(coin.bonding_curve)
+      ))!;
+      const curve = PUMP_SDK.decodeBondingCurve(bondingCurveAccountInfo);
+      const associatedUser = getAssociatedTokenAddressSync(
+        mint,
+        wallet.publicKey,
+        true,
+        tokenProgram,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      const associatedUserAccountInfo = await connection
+        .getAccountInfo(associatedUser)
+        .catch(() => null);
 
+      let tokensToBuy: BN;
+      let solRequired: BN;
       if (nativeSelected) {
-        tokensToBuy = buyQuote(parsedAmount, true);
-        solRequired = parsedAmount;
-
-        if (!global) return;
-        const fee = solRequired.mul(global.feeBasisPoints).div(new BN(10_000));
-        solRequired = solRequired.add(fee);
+        solRequired = new BN(Math.floor((solAmount || 0) * 10 ** 9));
+        tokensToBuy = getBuyTokenAmountFromSolAmount({
+          global: sdkGlobal,
+          feeConfig,
+          mintSupply: curve.tokenTotalSupply,
+          bondingCurve: curve,
+          amount: solRequired,
+          quoteMint: NATIVE_MINT,
+        });
       } else {
-        solRequired = buyQuote(parsedAmount, false);
-        tokensToBuy = parsedAmount;
+        tokensToBuy = new BN(Math.floor(amount || 0).toString()).mul(
+          new BN(1000000)
+        );
+        solRequired = getSellSolAmountFromTokenAmount({
+          global: sdkGlobal,
+          feeConfig,
+          mintSupply: curve.tokenTotalSupply,
+          bondingCurve: curve,
+          amount: tokensToBuy,
+        });
       }
 
-      const associatedUser = getAssociatedTokenAddressSync(
-        new PublicKey(coin.mint),
-        wallet.publicKey,
-        true
-      );
-
-      const userTokenAccount = await getAccount(
-        connection,
-        associatedUser
-      ).catch((e) => null);
-
-      const buyInstruction = await pumpProgram.methods
-        .buy(
-          tokensToBuy,
-          // new BN(0)
-          solRequired.add(
-            solRequired.mul(new BN(Math.floor(slippage * 10))).div(new BN(1000))
-          )
-        )
-        .accounts({
-          feeRecipient: global.feeRecipient,
-          global: globalPDA,
-          mint: coin.mint,
-          bondingCurve: coin.bonding_curve,
-          associatedBondingCurve: coin.associated_bonding_curve,
-          associatedUser,
-          user: wallet.publicKey,
-        })
-        .instruction();
+      const sdkIxs = await PUMP_SDK.buyInstructions({
+        global: sdkGlobal,
+        bondingCurveAccountInfo,
+        bondingCurve: curve,
+        associatedUserAccountInfo,
+        mint,
+        user: wallet.publicKey,
+        amount: tokensToBuy,
+        solAmount: solRequired,
+        slippage,
+        tokenProgram,
+      });
 
       const recentBlockhash = await connection
         .getLatestBlockhash("finalized")
@@ -219,15 +254,7 @@ export default function TradeBox({
             ComputeBudgetProgram.setComputeUnitPrice({
               microLamports: priorityFee,
             }),
-            userTokenAccount
-              ? null
-              : createAssociatedTokenAccountInstruction(
-                  wallet.publicKey,
-                  associatedUser,
-                  wallet.publicKey,
-                  new PublicKey(coin.mint)
-                ),
-            buyInstruction,
+            ...sdkIxs,
           ].filter((v) => v !== null) as TransactionInstruction[],
         }).compileToV0Message()
       );
@@ -238,6 +265,7 @@ export default function TradeBox({
       if (comment) createComment(comment, signature);
 
       setAmount(("" as any) as number);
+      setSolAmount(undefined);
 
       await toastTransaction({
         title: `buy ${amount} ${coin.symbol} for ${lamportsToSol(
@@ -259,40 +287,44 @@ export default function TradeBox({
   const sell = async (comment?: string) => {
     try {
       if (!amount) return;
-      if (!bondingCurve) return;
-      if (!pumpProgram) return;
-      if (!global) return;
-      if (!globalPDA) return;
       if (!wallet) return;
       if (!signTransaction) return;
       if (!publicKey) return;
 
-      const associatedUser = getAssociatedTokenAddressSync(
-        new PublicKey(coin.mint),
-        wallet.publicKey,
-        true
-      );
+      const mint = new PublicKey(coin.mint);
+      const tokenProgram = await getMintTokenProgram(connection, coin.mint);
+      const onlineSdk = new OnlinePumpSdk(connection);
+      const [sdkGlobal, feeConfig] = await Promise.all([
+        onlineSdk.fetchGlobal(),
+        onlineSdk.fetchFeeConfig(),
+      ]);
+      const bondingCurveAccountInfo = (await connection.getAccountInfo(
+        new PublicKey(coin.bonding_curve)
+      ))!;
+      const curve = PUMP_SDK.decodeBondingCurve(bondingCurveAccountInfo);
 
       const amountToSell = parsedAmount;
-      const quote = sellQuote(amountToSell);
+      const solAmount = getSellSolAmountFromTokenAmount({
+        global: sdkGlobal,
+        feeConfig,
+        mintSupply: curve.tokenTotalSupply,
+        bondingCurve: curve,
+        amount: amountToSell,
+      });
 
-      const sellInstruction = await pumpProgram.methods
-        .sell(
-          amountToSell,
-          quote.sub(
-            quote.mul(new BN(Math.floor(slippage * 10))).div(new BN(1000))
-          )
-        )
-        .accounts({
-          feeRecipient: global.feeRecipient,
-          global: globalPDA,
-          mint: coin.mint,
-          bondingCurve: coin.bonding_curve,
-          associatedBondingCurve: coin.associated_bonding_curve,
-          associatedUser,
-          user: wallet.publicKey,
-        })
-        .instruction();
+      const sdkIxs = await PUMP_SDK.sellInstructions({
+        global: sdkGlobal,
+        bondingCurveAccountInfo,
+        bondingCurve: curve,
+        mint,
+        user: wallet.publicKey,
+        amount: amountToSell,
+        solAmount,
+        slippage,
+        tokenProgram,
+        mayhemMode: curve.isMayhemMode ?? false,
+        cashback: curve.isCashbackCoin ?? false,
+      });
 
       const recentBlockhash = await connection
         .getLatestBlockhash("finalized")
@@ -316,7 +348,7 @@ export default function TradeBox({
             ComputeBudgetProgram.setComputeUnitPrice({
               microLamports: priorityFee,
             }),
-            sellInstruction,
+            ...sdkIxs,
           ].filter((v) => v !== null) as TransactionInstruction[],
         }).compileToV0Message()
       );
@@ -326,11 +358,13 @@ export default function TradeBox({
 
       if (comment) createComment(comment, signature);
 
-      // send this signed tx to the backend
       setAmount(("" as any) as number);
+      setSolAmount(undefined);
 
-      toastTransaction({
-        title: `sell ${amount} ${coin.symbol} for ${lamportsToSol(quote)} SOL`,
+      await toastTransaction({
+        title: `sell ${amount} ${coin.symbol} for ${lamportsToSol(
+          solAmount
+        )} SOL`,
         signature,
       });
     } catch (e) {

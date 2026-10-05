@@ -6,6 +6,7 @@ import {
   TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
+import { getMintTokenProgram } from "../lib/utils";
 import BN from "bn.js";
 
 export const useTokenBalance = (mintAddress?: string, address?: string) => {
@@ -20,10 +21,13 @@ export const useTokenBalance = (mintAddress?: string, address?: string) => {
     const mintPublicKey = new PublicKey(mintAddress);
     const ownerPublicKey = new PublicKey(address);
 
-    // Find the associated token account for the owner address
+    // derive the ATA with the mint's owning token program (legacy or Token-2022)
+    const tokenProgram = await getMintTokenProgram(connection, mintAddress);
     const associatedAddress = await getAssociatedTokenAddress(
       mintPublicKey,
-      ownerPublicKey
+      ownerPublicKey,
+      true,
+      tokenProgram
     );
 
     setAssociatedAddress(associatedAddress);
