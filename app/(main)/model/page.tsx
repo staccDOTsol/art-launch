@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ModelTrade } from "./model-trade";
-import { ModelChat } from "./model-chat";
+import { ModelWorkspace } from "./model-workspace";
 import { MODEL_MINT_ADDRESS } from "@/lib/model-config";
 
 export const metadata: Metadata = {
@@ -23,10 +22,7 @@ export default function ModelPage() {
           </p>
         </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ModelTrade />
-        <ModelChat />
-      </div>
+      <ModelWorkspace />
     </div>
   );
 }

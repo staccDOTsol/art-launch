@@ -32,6 +32,7 @@ const ALLOWED_METHODS = new Set([
   "getLatestBlockhash",
   "getBlockHeight",
   "getSignatureStatuses",
+  "getSignaturesForAddress",
   "getRecentPrioritizationFees",
   "sendTransaction",
 ]);
@@ -220,6 +221,21 @@ export async function POST(request: Request): Promise<Response> {
       !Array.isArray(rpc.params) || rpc.params.length > 3 ||
       !(typeof rpc.id === "number" || typeof rpc.id === "string")) {
     return error(403, "RPC method or request shape is not allowed.");
+  }
+
+  if (rpc.method === "getSignaturesForAddress") {
+    const address = rpc.params[0];
+    const options = rpc.params[1];
+    if ((address !== MODEL_CURVE.toBase58() && address !== MODEL_POOL.toBase58()) ||
+        !options || Array.isArray(options) || typeof options !== "object") {
+      return error(403, "Only model market activity can be read.");
+    }
+    const query = options as Record<string, unknown>;
+    if (!Number.isInteger(query.limit) || (query.limit as number) < 1 || (query.limit as number) > 8 ||
+        (query.commitment !== undefined && query.commitment !== "confirmed") ||
+        Object.keys(query).some((key) => key !== "limit" && key !== "commitment")) {
+      return error(403, "Model activity query is not allowed.");
+    }
   }
 
   const sending = rpc.method === "sendTransaction";
