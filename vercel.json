@@ -1,5 +1,12 @@
 {
   "installCommand": "yarn install",
   "buildCommand": "next build",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://chat.staccpad.fun/",
+      "permanent": true
+    }
+  ]
 }
